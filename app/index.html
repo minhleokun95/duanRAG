@@ -580,7 +580,76 @@
       text-align: center; padding: 40px 20px; color: var(--text-muted);
     }
     .empty-state-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.8; }
+
+    /* Simulator Tab Styles */
+    .sim-subtabs {
+      display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 12px; flex-wrap: wrap;
+    }
+    .sim-subtab-btn {
+      padding: 9px 16px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg-card-subtle); color: var(--text-muted); font-size: 13.5px;
+      font-weight: 600; cursor: pointer; transition: all 0.15s ease; font-family: inherit;
+    }
+    .sim-subtab-btn:hover { color: var(--text-main); border-color: var(--border-focus); }
+    .sim-subtab-btn.active {
+      background: var(--primary); color: #fff; border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+    .sim-panel { display: none; }
+    .sim-panel.active { display: block; animation: fadeIn 0.2s ease; }
+
+    .sim-grid {
+      display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; align-items: start;
+    }
+    @media (max-width: 960px) {
+      .sim-grid { grid-template-columns: 1fr; }
+    }
+
+    .sim-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 22px; box-shadow: var(--shadow-md);
+    }
+    .sim-result-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 22px; box-shadow: var(--shadow-md);
+      min-height: 380px;
+    }
+    .sim-result-box {
+      background: var(--bg-card-subtle); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-top: 14px;
+    }
+    .sim-stat-row {
+      display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px;
+    }
+    .sim-metric-big {
+      font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.1;
+    }
+    .sim-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 700;
+    }
+    .sim-badge.safe { background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .sim-badge.warn { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .sim-badge.danger { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .retake-table {
+      width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13.5px;
+    }
+    .retake-table th, .retake-table td {
+      padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left;
+    }
+    .retake-table th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 700; }
+    .btn-row-remove {
+      background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px;
+    }
+    .btn-outline-sm {
+      padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg-card-subtle); color: var(--text-main); font-size: 12.5px;
+      font-weight: 600; cursor: pointer; transition: all 0.15s ease; font-family: inherit;
+    }
+    .btn-outline-sm:hover { border-color: var(--primary); color: var(--primary); background: var(--bg-card); }
   </style>
+
 </head>
 <body>
 
@@ -618,8 +687,10 @@
       <button class="tab-btn active" data-tab="tab-chat">💬 Hỏi đáp AI (Chat)</button>
       <button class="tab-btn" data-tab="tab-analyzer">⚖️ Cố vấn Tình huống Học vụ</button>
       <button class="tab-btn" data-tab="tab-codex">📖 Sổ tay & Diễn giải Điều khoản</button>
+      <button class="tab-btn" data-tab="tab-simulator">🧮 Mô Phỏng & Tính Điểm Học Vụ</button>
     </div>
   </nav>
+
 
   <!-- Main Content Wrap -->
   <main class="main-wrap">
@@ -801,7 +872,289 @@
       </div>
     </div>
 
+    <!-- TAB 4: ACADEMIC SIMULATOR & RULE ENGINE -->
+    <div id="tab-simulator" class="tab-content">
+      <!-- Subtabs Bar -->
+      <div class="sim-subtabs">
+        <button class="sim-subtab-btn active" data-sim="sim-status">⚠️ Kiểm tra Cảnh báo & Hạn mức Tín chỉ</button>
+        <button class="sim-subtab-btn" data-sim="sim-retake">📈 Mô phỏng Nâng CPA (Học lại / Cải thiện)</button>
+        <button class="sim-subtab-btn" data-sim="sim-grade">🧮 Tính Điểm Học Phần (10-30-60)</button>
+        <button class="sim-subtab-btn" data-sim="sim-grad">🎓 Kiểm tra Điều kiện Tốt nghiệp</button>
+      </div>
+
+      <!-- PANEL 1: STATUS & WARNING CHECK -->
+      <div id="sim-status" class="sim-panel active">
+        <div class="sim-grid">
+          <div class="sim-card">
+            <h2 class="card-title">⚠️ Kiểm tra Cảnh báo & Thôi học</h2>
+            <p class="card-subtitle">Đối chiếu 100% chuẩn xác với <strong>Điều 11</strong> (Cảnh báo & Buộc thôi học) và <strong>Điều 4</strong> (Giới hạn tín chỉ đăng ký).</p>
+
+            <form id="form-sim-status">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Học kỳ thứ mấy của khóa:</label>
+                  <select id="sim-status-sem" class="form-select">
+                    <option value="1">Học kỳ 1 (Năm 1)</option>
+                    <option value="2">Học kỳ 2 (Năm 1)</option>
+                    <option value="3" selected>Học kỳ 3 (Năm 2)</option>
+                    <option value="4">Học kỳ 4 (Năm 2)</option>
+                    <option value="5">Học kỳ 5 (Năm 3)</option>
+                    <option value="6">Học kỳ 6 (Năm 3)</option>
+                    <option value="7">Học kỳ 7 (Năm 4)</option>
+                    <option value="8">Học kỳ 8 (Năm 4)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Năm học thứ mấy:</label>
+                  <select id="sim-status-year" class="form-select">
+                    <option value="1">Năm thứ 1</option>
+                    <option value="2" selected>Năm thứ 2</option>
+                    <option value="3">Năm thứ 3</option>
+                    <option value="4">Năm thứ 4 trở đi</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">GPA Học kỳ hiện tại (thang 4):</label>
+                  <input type="number" id="sim-status-gpa" class="form-input" step="0.01" min="0" max="4.0" value="1.10" required>
+                  <span style="font-size:11.5px; color:var(--text-muted);">Chuẩn cảnh báo: &lt; 1.0 (HK1), &lt; 1.2 (HK khác)</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">CPA Tích lũy hiện tại (thang 4):</label>
+                  <input type="number" id="sim-status-cpa" class="form-input" step="0.01" min="0" max="4.0" value="1.75" required>
+                  <span style="font-size:11.5px; color:var(--text-muted);">Chuẩn CPA: Năm 1 (&lt;1.6), Năm 2 (&lt;1.8), Năm 3 (&lt;1.9), Năm 4 (&lt;2.0)</span>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Số lần đã bị cảnh báo trước đó:</label>
+                  <input type="number" id="sim-status-prev" class="form-input" min="0" max="5" value="1">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Kỳ liền trước có bị cảnh báo không?</label>
+                  <select id="sim-status-consec" class="form-select">
+                    <option value="1" selected>Có (Cảnh báo kỳ liền trước)</option>
+                    <option value="0">Không (Kỳ trước bình thường)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-block" style="margin-top:14px;">
+                <span>🔍 Chạy Kiểm Tra Quy Chế</span>
+              </button>
+            </form>
+          </div>
+
+          <div class="sim-result-card">
+            <h2 class="card-title">📊 Kết quả Kiểm tra Quy chế</h2>
+            <div id="sim-status-result">
+              <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <p>Nhập thông số và bấm <strong>Chạy Kiểm Tra Quy Chế</strong> để xem kết quả.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 2: GPA RETAKE SIMULATOR -->
+      <div id="sim-retake" class="sim-panel">
+        <div class="sim-grid">
+          <div class="sim-card">
+            <h2 class="card-title">📈 Mô phỏng Nâng CPA Tích Lũy</h2>
+            <p class="card-subtitle">Áp dụng công thức <strong>Điều 6 Khoản 2</strong>: Điểm cao nhất thay thế điểm cũ khi tính điểm trung bình tích lũy.</p>
+
+            <form id="form-sim-retake">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">CPA Tích lũy hiện tại (thang 4):</label>
+                  <input type="number" id="sim-retake-current-cpa" class="form-input" step="0.01" min="0" max="4.0" value="1.80" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Số tín chỉ đã tích lũy hiện tại:</label>
+                  <input type="number" id="sim-retake-current-credits" class="form-input" min="1" max="200" value="45" required>
+                </div>
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; margin:16px 0 8px;">
+                <label class="form-label" style="margin:0;">📚 Danh sách môn học lại / học cải thiện:</label>
+                <button type="button" id="btn-add-retake-row" class="btn-outline-sm">+ Thêm môn</button>
+              </div>
+
+              <table class="retake-table">
+                <thead>
+                  <tr>
+                    <th>Tên môn</th>
+                    <th style="width:70px;">Số TC</th>
+                    <th style="width:85px;">Điểm cũ</th>
+                    <th style="width:85px;">Kỳ vọng</th>
+                    <th style="width:40px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="retake-tbody">
+                  <tr>
+                    <td><input type="text" class="form-input retake-name" value="Toán cao cấp 1"></td>
+                    <td><input type="number" class="form-input retake-tc" value="3" min="1" max="10"></td>
+                    <td><input type="number" class="form-input retake-old" value="1.0" step="0.5" min="0" max="4"></td>
+                    <td><input type="number" class="form-input retake-new" value="3.0" step="0.5" min="0" max="4"></td>
+                    <td><button type="button" class="btn-row-remove" onclick="removeRetakeRow(this)">✕</button></td>
+                  </tr>
+                  <tr>
+                    <td><input type="text" class="form-input retake-name" value="Vật lý đại cương"></td>
+                    <td><input type="number" class="form-input retake-tc" value="3" min="1" max="10"></td>
+                    <td><input type="number" class="form-input retake-old" value="0.0" step="0.5" min="0" max="4"></td>
+                    <td><input type="number" class="form-input retake-new" value="3.0" step="0.5" min="0" max="4"></td>
+                    <td><button type="button" class="btn-row-remove" onclick="removeRetakeRow(this)">✕</button></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="form-row" style="margin-top:14px;">
+                <div class="form-group">
+                  <label class="form-label">Tín chỉ môn mới kỳ tới:</label>
+                  <input type="number" id="sim-new-credits" class="form-input" min="0" max="25" value="6">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Điểm TB môn mới kỳ vọng:</label>
+                  <input type="number" id="sim-new-grade" class="form-input" step="0.1" min="0" max="4.0" value="3.5">
+                </div>
+              </div>
+
+              <button type="submit" class="btn-block" style="margin-top:14px;">
+                <span>🚀 Tính Toán Điểm CPA Mới</span>
+              </button>
+            </form>
+          </div>
+
+          <div class="sim-result-card">
+            <h2 class="card-title">🎯 Kết quả Mô phỏng Nâng điểm</h2>
+            <div id="sim-retake-result">
+              <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <p>Nhập các môn học lại và bấm <strong>Tính Toán Điểm CPA Mới</strong> để xem dự báo.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 3: GRADE CALCULATOR -->
+      <div id="sim-grade" class="sim-panel">
+        <div class="sim-grid">
+          <div class="sim-card">
+            <h2 class="card-title">🧮 Tính Điểm Học Phần & Quy Đổi Thang Điểm</h2>
+            <p class="card-subtitle">Công thức: <strong>10% Chuyên cần + 30% Giữa kỳ + 60% Cuối kỳ</strong> (Điều 8). Vắng quá 20% tiết nhận điểm 0 (Điều 8 Khoản 2).</p>
+
+            <form id="form-sim-grade">
+              <div class="form-group">
+                <label class="form-label">Điểm Chuyên cần (10%):</label>
+                <input type="number" id="grade-cc" class="form-input" step="0.1" min="0" max="10" value="9.0" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Điểm Kiểm tra Giữa kỳ (30%):</label>
+                <input type="number" id="grade-gk" class="form-input" step="0.1" min="0" max="10" value="7.5" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Điểm Thi Kết thúc học phần (60%):</label>
+                <input type="number" id="grade-ck" class="form-input" step="0.1" min="0" max="10" value="8.0" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tỷ lệ vắng mặt (% số tiết):</label>
+                <input type="number" id="grade-absent" class="form-input" step="1" min="0" max="100" value="5">
+                <span style="font-size:11.5px; color:var(--text-muted);">&gt; 20% vắng mặt sẽ bị cấm thi và nhận điểm F (Điều 8 Khoản 2).</span>
+              </div>
+
+              <button type="submit" class="btn-block" style="margin-top:14px;">
+                <span>📐 Tính Điểm Tổng Kết</span>
+              </button>
+            </form>
+          </div>
+
+          <div class="sim-result-card">
+            <h2 class="card-title">📋 Điểm Tổng Kết & Phân Loại</h2>
+            <div id="sim-grade-result">
+              <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <p>Nhập điểm các thành phần để xem điểm chữ và thang điểm 4 tương ứng.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 4: GRADUATION CHECK -->
+      <div id="sim-grad" class="sim-panel">
+        <div class="sim-grid">
+          <div class="sim-card">
+            <h2 class="card-title">🎓 Kiểm tra Điều kiện Tốt nghiệp</h2>
+            <p class="card-subtitle">Đối chiếu 4 điều kiện tốt nghiệp (<strong>Điều 12</strong>), xếp hạng và kiểm tra nguy cơ bị giảm hạng tốt nghiệp (<strong>Điều 13</strong>).</p>
+
+            <form id="form-sim-grad">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Điểm CPA tích lũy toàn khóa:</label>
+                  <input type="number" id="grad-cpa" class="form-input" step="0.01" min="0" max="4.0" value="3.35" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Số tín chỉ đã tích lũy:</label>
+                  <input type="number" id="grad-accum-tc" class="form-input" min="0" max="250" value="130" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Tổng tín chỉ CTĐT yêu cầu:</label>
+                  <input type="number" id="grad-req-tc" class="form-input" min="1" max="250" value="130" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Số tín chỉ phải học lại (điểm F):</label>
+                  <input type="number" id="grad-retake-tc" class="form-input" min="0" max="50" value="8">
+                  <span style="font-size:11.5px; color:var(--text-muted);">&gt; 5% tổng TC sẽ bị giảm 1 hạng tốt nghiệp (Điều 13 Khoản 2).</span>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top:10px;">
+                <label class="form-label">Chứng chỉ điều kiện & Kỷ luật:</label>
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:13.5px;">
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="grad-lang" checked> Đạt chuẩn đầu ra Ngoại ngữ
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="grad-defense" checked> Có chứng chỉ Giáo dục Quốc phòng - An ninh
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="grad-pe" checked> Có chứng chỉ Giáo dục thể chất
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--danger);">
+                    <input type="checkbox" id="grad-discipline"> Từng bị kỷ luật cảnh cáo trở lên (bị hạ 1 bậc tốt nghiệp)
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-block" style="margin-top:14px;">
+                <span>🎓 Kiểm Tra Điều Kiện & Xếp Hạng</span>
+              </button>
+            </form>
+          </div>
+
+          <div class="sim-result-card">
+            <h2 class="card-title">📜 Đánh Giá Tốt Nghiệp</h2>
+            <div id="sim-grad-result">
+              <div class="empty-state">
+                <div class="empty-state-icon">🎓</div>
+                <p>Nhập thông tin toàn khóa để kiểm tra điều kiện xét tốt nghiệp và hạng bằng.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
+
 
   <!-- MODAL: AI SETTINGS -->
   <div id="modal-settings" class="modal-overlay">
@@ -1521,6 +1874,49 @@
         const creditsVal = el('case-credits').value;
         const warningVal = el('case-warning').value;
 
+        // Determine Risk Banner via Rule Engine or Text
+        let riskClass = 'safe';
+        let riskText = '🟢 Tình trạng An toàn: Tiếp tục duy trì kế hoạch học tập';
+
+        if (data.rule_engine) {
+          const re = data.rule_engine;
+          riskText = re.risk_label;
+          if (re.status === 'CRITICAL') {
+            riskClass = 'high';
+          } else if (re.status === 'HIGH_WARNING' || re.status === 'WARNING') {
+            riskClass = 'warn';
+          } else {
+            riskClass = 'safe';
+          }
+        } else {
+          if (analysis.includes('🔴') || analysis.toLowerCase().includes('buộc thôi học') || analysis.toLowerCase().includes('nguy cơ cao')) {
+            riskClass = 'high';
+            riskText = '⚠️ NGUY CƠ BUỘC THÔI HỌC / CẢNH BÁO CẤP 3';
+          } else if (analysis.includes('🟡') || analysis.includes('🟠') || analysis.toLowerCase().includes('cảnh báo')) {
+            riskClass = 'warn';
+            riskText = '🟠 MỨC ĐỘ CẢNH BÁO: Cần điều chỉnh kế hoạch học tập khẩn cấp';
+          }
+        }
+
+        let ruleBoxHtml = '';
+        if (data.rule_engine) {
+          const re = data.rule_engine;
+          ruleBoxHtml = `
+            <div style="background:var(--bg-card-subtle); border:1px solid var(--border-focus); border-radius:12px; padding:14px 18px; margin:14px 0; font-size:13.5px;">
+              <div style="font-weight:700; color:var(--primary); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                <span>⚖️ Kết quả Xác minh Chuẩn từ Bộ Quy chế (Rule Engine):</span>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                <div>• <strong>Xếp loại học lực:</strong> ${re.academic_standing}</div>
+                <div>• <strong>Cảnh báo kỳ này:</strong> ${re.is_warned ? '<span style=\"color:var(--danger); font-weight:700;\">CÓ CẢNH BÁO ⚠️</span>' : '<span style=\"color:var(--success); font-weight:700;\">Không</span>'}</div>
+              </div>
+              <div>• <strong>Hạn mức tín chỉ kỳ tiếp theo:</strong> <strong>${re.allowed_credits_next_semester.min} - ${re.allowed_credits_next_semester.max} tín chỉ</strong> (${re.allowed_credits_next_semester.note})</div>
+              ${re.is_expelled ? `<div style=\"margin-top:6px; color:var(--danger); font-weight:700;\">🚨 ${re.expel_reason}</div>` : ''}
+              <div style="margin-top:6px; color:var(--text-muted); font-size:12px;">Căn cứ pháp lý: ${re.regulations_cited.join('; ')}</div>
+            </div>
+          `;
+        }
+
         const metricsHtml = `
           <div class="case-metrics-bar">
             <span class="metric-pill">⚠️ Cảnh báo: <strong>${warningVal || 0} lần</strong></span>
@@ -1545,12 +1941,14 @@
           <div class="risk-banner ${riskClass}">
             <span>${riskText}</span>
           </div>
+          ${ruleBoxHtml}
           ${metricsHtml}
           <div class="analysis-content">
             ${formatMarkdown(analysis)}
           </div>
           ${sourcesHtml}
         `;
+
 
       } catch (err) {
         analyzerResultWrap.innerHTML = `
@@ -1673,9 +2071,334 @@
       loadStatus();
     };
 
+    // ===================================================================
+    // TAB 4: SIMULATOR & RULE ENGINE CLIENT LOGIC
+    // ===================================================================
+    
+    // Sub-tab switching
+    document.querySelectorAll('.sim-subtab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.sim;
+        document.querySelectorAll('.sim-subtab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.sim-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        el(target).classList.add('active');
+      });
+    });
+
+    // Subtab 1: Status Check Form
+    el('form-sim-status').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const sem = parseInt(el('sim-status-sem').value);
+      const yr = parseInt(el('sim-status-year').value);
+      const gpa = parseFloat(el('sim-status-gpa').value);
+      const cpa = parseFloat(el('sim-status-cpa').value);
+      const prev = parseInt(el('sim-status-prev').value) || 0;
+      const consec = el('sim-status-consec').value === '1';
+
+      const resBox = el('sim-status-result');
+      resBox.innerHTML = '<div class="empty-state">Đang kiểm tra quy chế... ⏳</div>';
+
+      try {
+        const res = await fetch('/api/simulator/status-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            semester_index: sem,
+            year_level: yr,
+            gpa_semester: gpa,
+            cpa_cumulative: cpa,
+            previous_warnings: prev,
+            consecutive_warning: consec
+          })
+        });
+        const data = await res.json();
+
+        let badgeClass = 'safe';
+        if (data.status === 'CRITICAL') badgeClass = 'danger';
+        else if (data.status === 'HIGH_WARNING' || data.status === 'WARNING') badgeClass = 'warn';
+
+        let reasonsHtml = '';
+        if (data.warning_reasons && data.warning_reasons.length) {
+          reasonsHtml = `
+            <div style="margin-top:12px; padding:10px 14px; background:rgba(239, 68, 68, 0.08); border:1px solid rgba(239, 68, 68, 0.2); border-radius:10px;">
+              <strong style="color:var(--danger);">⚠️ Nguyên nhân bị cảnh báo:</strong>
+              <ul style="margin:6px 0 0 18px; font-size:13px;">
+                ${data.warning_reasons.map(r => `<li>${r}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }
+
+        resBox.innerHTML = `
+          <div class="sim-badge ${badgeClass}">${data.risk_label}</div>
+          <div class="sim-result-box">
+            <div class="sim-stat-row">
+              <span style="color:var(--text-muted); font-size:13.5px;">Xếp loại học lực hiện tại:</span>
+              <strong style="font-size:16px;">${data.academic_standing}</strong>
+            </div>
+            <div class="sim-stat-row">
+              <span style="color:var(--text-muted); font-size:13.5px;">Hạn mức đăng ký tín chỉ kỳ tới:</span>
+              <strong style="font-size:16px; color:var(--primary);">${data.allowed_credits_next_semester.min} - ${data.allowed_credits_next_semester.max} tín chỉ</strong>
+            </div>
+            <p style="font-size:12.5px; color:var(--text-sub); margin-top:4px;"><em>${data.allowed_credits_next_semester.note}</em></p>
+            ${reasonsHtml}
+            ${data.is_expelled ? `<div style="margin-top:12px; padding:10px; background:rgba(239,68,68,0.15); border-radius:8px; color:var(--danger); font-weight:700;">🚨 ${data.expel_reason}</div>` : ''}
+            
+            <div style="margin-top:14px; padding-top:10px; border-top:1px dashed var(--border);">
+              <span style="font-size:12px; font-weight:700; color:var(--text-muted);">CĂN CỨ ĐIỀU KHOẢN QUY CHẾ:</span>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+                ${data.regulations_cited.map(c => `<span class="citation-tag">${c}</span>`).join('')}
+              </div>
+            </div>
+
+            <div style="margin-top:14px; padding-top:10px; border-top:1px dashed var(--border);">
+              <span style="font-size:12px; font-weight:700; color:var(--text-muted);">LỜI KHUYÊN HÀNH ĐỘNG:</span>
+              <ul style="margin:6px 0 0 18px; font-size:13px; color:var(--text-sub);">
+                ${data.next_steps_advice.map(a => `<li>${a}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        resBox.innerHTML = `<p style="color:var(--danger)">Lỗi: ${err.message}</p>`;
+      }
+    });
+
+    // Subtab 2: Retake Helper
+    window.removeRetakeRow = function(btn) {
+      const row = btn.closest('tr');
+      const tbody = el('retake-tbody');
+      if (tbody.querySelectorAll('tr').length > 1) {
+        row.remove();
+      } else {
+        showToast('Cần ít nhất 1 môn để tính toán!', 'warning');
+      }
+    };
+
+    el('btn-add-retake-row').addEventListener('click', () => {
+      const tbody = el('retake-tbody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="form-input retake-name" placeholder="Tên môn học"></td>
+        <td><input type="number" class="form-input retake-tc" value="3" min="1" max="10"></td>
+        <td><input type="number" class="form-input retake-old" value="1.0" step="0.5" min="0" max="4"></td>
+        <td><input type="number" class="form-input retake-new" value="3.0" step="0.5" min="0" max="4"></td>
+        <td><button type="button" class="btn-row-remove" onclick="removeRetakeRow(this)">✕</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    el('form-sim-retake').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currCpa = parseFloat(el('sim-retake-current-cpa').value);
+      const currTc = parseInt(el('sim-retake-current-credits').value);
+      const newCredits = parseInt(el('sim-new-credits').value) || 0;
+      const newGrade = parseFloat(el('sim-new-grade').value) || 0;
+
+      const retakeCourses = [];
+      el('retake-tbody').querySelectorAll('tr').forEach(tr => {
+        const name = tr.querySelector('.retake-name').value.trim() || 'Học phần';
+        const tc = parseInt(tr.querySelector('.retake-tc').value) || 3;
+        const oldG = parseFloat(tr.querySelector('.retake-old').value) || 0;
+        const newG = parseFloat(tr.querySelector('.retake-new').value) || 0;
+        retakeCourses.push({
+          name: name,
+          credits: tc,
+          old_grade_4: oldG,
+          expected_grade_4: newG
+        });
+      });
+
+      const newCourses = newCredits > 0 ? [{
+        name: 'Các môn mới',
+        credits: newCredits,
+        expected_grade_4: newGrade
+      }] : [];
+
+      const resBox = el('sim-retake-result');
+      resBox.innerHTML = '<div class="empty-state">Đang mô phỏng nâng CPA... ⏳</div>';
+
+      try {
+        const res = await fetch('/api/simulator/gpa-retake', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            current_cpa: currCpa,
+            accumulated_credits: currTc,
+            retake_courses: retakeCourses,
+            new_courses: newCourses
+          })
+        });
+        const data = await res.json();
+
+        const diffStr = data.cpa_gain >= 0 ? `+${data.cpa_gain}` : `${data.cpa_gain}`;
+        const diffColor = data.cpa_gain >= 0 ? 'var(--success)' : 'var(--danger)';
+
+        resBox.innerHTML = `
+          <div class="sim-result-box">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+              <div>
+                <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">CPA Dự kiến Sau Cải Thiện:</div>
+                <div class="sim-metric-big">${data.new_cpa} <span style="font-size:18px; color:${diffColor}; font-weight:700;">(${diffStr})</span></div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:12px; color:var(--text-muted);">Xếp loại học lực:</div>
+                <strong style="font-size:16px; color:var(--primary);">${data.new_standing}</strong>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px; margin:14px 0; padding:12px; background:var(--bg-card); border-radius:10px;">
+              <div>• CPA ban đầu: <strong>${data.current_cpa}</strong> (${data.current_standing})</div>
+              <div>• Tổng TC tích lũy mới: <strong>${data.new_credits} TC</strong></div>
+              <div>• Tổng TC đăng ký kỳ này: <strong>${data.total_credits_registered_term} TC</strong></div>
+              <div>• Đạt chuẩn tốt nghiệp (CPA &ge; 2.0): <strong>${data.graduation_threshold_reached ? 'ĐẠT ✅' : 'CHƯA ❌'}</strong></div>
+            </div>
+
+            <div style="font-size:12px; color:var(--text-muted); margin-top:8px;">
+              📌 <em>${data.regulation_note}</em>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        resBox.innerHTML = `<p style="color:var(--danger)">Lỗi: ${err.message}</p>`;
+      }
+    });
+
+    // Subtab 3: Course Grade Calc
+    el('form-sim-grade').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const cc = parseFloat(el('grade-cc').value);
+      const gk = parseFloat(el('grade-gk').value);
+      const ck = parseFloat(el('grade-ck').value);
+      const absent = (parseFloat(el('grade-absent').value) || 0) / 100.0;
+
+      const resBox = el('sim-grade-result');
+      resBox.innerHTML = '<div class="empty-state">Đang tính điểm học phần... ⏳</div>';
+
+      try {
+        const res = await fetch('/api/simulator/grade-calc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            attendance: cc,
+            midterm: gk,
+            final_exam: ck,
+            absent_ratio: absent
+          })
+        });
+        const data = await res.json();
+
+        let badgeClass = data.is_passed ? 'safe' : 'danger';
+        let statusTitle = data.is_passed ? 'ĐẠT HỌC PHẦN ✅' : 'KHÔNG ĐẠT (ĐIỂM F) ❌';
+
+        resBox.innerHTML = `
+          <div class="sim-badge ${badgeClass}">${statusTitle}</div>
+          <div class="sim-result-box">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+              <div>
+                <div style="font-size:12px; color:var(--text-muted); font-weight:700;">ĐIỂM HỆ 10:</div>
+                <div class="sim-metric-big">${data.calculated_10}</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:700;">ĐIỂM CHỮ:</div>
+                <div style="font-size:28px; font-weight:800; color:var(--primary);">${data.grade_letter}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:700;">HỆ 4 (GPA):</div>
+                <div style="font-size:28px; font-weight:800; color:var(--primary);">${data.grade_4}</div>
+              </div>
+            </div>
+
+            <p style="font-size:13px; line-height:1.6; margin-top:8px;">${data.note}</p>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:10px; border-top:1px dashed var(--border); padding-top:8px;">
+              ${data.formula}
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        resBox.innerHTML = `<p style="color:var(--danger)">Lỗi: ${err.message}</p>`;
+      }
+    });
+
+    // Subtab 4: Graduation Check
+    el('form-sim-grad').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const cpa = parseFloat(el('grad-cpa').value);
+      const accumTc = parseInt(el('grad-accum-tc').value);
+      const reqTc = parseInt(el('grad-req-tc').value);
+      const retakeTc = parseInt(el('grad-retake-tc').value) || 0;
+      const lang = el('grad-lang').checked;
+      const defense = el('grad-defense').checked;
+      const pe = el('grad-pe').checked;
+      const discipline = el('grad-discipline').checked;
+
+      const resBox = el('sim-grad-result');
+      resBox.innerHTML = '<div class="empty-state">Đang xét điều kiện tốt nghiệp... ⏳</div>';
+
+      try {
+        const res = await fetch('/api/simulator/graduation-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cpa: cpa,
+            accumulated_credits: accumTc,
+            required_credits: reqTc,
+            retake_credits: retakeTc,
+            has_foreign_language: lang,
+            has_defense_edu: defense,
+            has_physical_edu: pe,
+            disciplinary_warning: discipline
+          })
+        });
+        const data = await res.json();
+
+        let badgeClass = data.is_eligible ? 'safe' : 'danger';
+        let badgeTitle = data.is_eligible ? `ĐỦ ĐIỀU KIỆN TỐT NGHIỆP: HẠNG ${data.final_rank.toUpperCase()}` : 'CHƯA ĐỦ ĐIỀU KIỆN TỐT NGHIỆP';
+
+        let condHtml = data.conditions.map(c => `
+          <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; font-size:13px;">
+            <span>${c.passed ? '✅' : '❌'}</span>
+            <div>
+              <strong>${c.title}:</strong> <span style="color:var(--text-sub);">${c.details}</span>
+            </div>
+          </div>
+        `).join('');
+
+        let downgradeHtml = '';
+        if (data.rank_downgraded) {
+          downgradeHtml = `
+            <div style="margin-top:12px; padding:10px 14px; background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3); border-radius:10px;">
+              <strong style="color:var(--warning);">⚠️ Bị giảm một hạng tốt nghiệp (Từ ${data.raw_rank} xuống ${data.final_rank}):</strong>
+              <ul style="margin:6px 0 0 18px; font-size:12.5px; color:var(--text-sub);">
+                ${data.downgrade_reasons.map(r => `<li>${r}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }
+
+        resBox.innerHTML = `
+          <div class="sim-badge ${badgeClass}">${badgeTitle}</div>
+          <div class="sim-result-box">
+            <div style="margin-bottom:12px;">
+              <strong style="font-size:14px;">4 Điều kiện xét tốt nghiệp (Điều 12):</strong>
+              <div style="margin-top:8px;">${condHtml}</div>
+            </div>
+            ${downgradeHtml}
+            <div style="margin-top:12px; padding-top:8px; border-top:1px dashed var(--border); font-size:12px; color:var(--text-muted);">
+              Căn cứ: Điều 12 & Điều 13 Quy chế đào tạo đại học.
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        resBox.innerHTML = `<p style="color:var(--danger)">Lỗi: ${err.message}</p>`;
+      }
+    });
+
     // Init App
     loadStatus();
     loadClauses();
+
   </script>
 </body>
 </html>

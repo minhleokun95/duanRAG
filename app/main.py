@@ -23,7 +23,23 @@ from sentence_transformers import SentenceTransformer
 
 # Thiet lap duong dan va cau hinh
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from app.rule_engine import (
+    CourseGradeInput,
+    GPASimulatorInput,
+    GraduationCheckInput,
+    StatusCheckInput,
+    calculate_course_grade,
+    check_academic_status_rules,
+    check_graduation_eligibility,
+    classify_academic_standing,
+    simulate_gpa_improvement,
+)
+
 ENV_PATH = ROOT / ".env"
+
 if ENV_PATH.exists():
     load_dotenv(ENV_PATH, override=True)
 
@@ -38,7 +54,10 @@ if not DB_DIR.exists():
     sys.exit("Chua co vector DB. Hay chay: python scripts\\embed_index.py")
 
 print("Dang khoi dong he thong RAG & nap model embedding...")
-embedder = SentenceTransformer(MODEL_NAME)
+try:
+    embedder = SentenceTransformer(MODEL_NAME, local_files_only=True)
+except Exception:
+    embedder = SentenceTransformer(MODEL_NAME)
 chroma_client = chromadb.PersistentClient(path=str(DB_DIR))
 collection = chroma_client.get_collection(COLLECTION_NAME)
 print(f"He thong san sang voi {collection.count()} chunk quy che hoc vu.")
@@ -252,9 +271,13 @@ class CaseAnalysisRequest(BaseModel):
     gpa: Optional[float] = None
     credits: Optional[int] = None
     warning_count: Optional[int] = None
+    semester_index: Optional[int] = None
+    year_level: Optional[int] = None
+    consecutive_warning: Optional[bool] = None
     api_key: Optional[str] = None
     base_url: Optional[str] = None
     model: Optional[str] = None
+
 
 
 class ExplainClauseRequest(BaseModel):
@@ -533,7 +556,7 @@ def chat_stream(req: ChatStreamRequest):
 
 @app.post("/api/analyze-case")
 def analyze_case(req: CaseAnalysisRequest):
-    """API Tu van va phan tich tinh huong hoc vu ca nhan bang AI."""
+    """API Tu van va phan tich tinh huong hoc vu ca nhan bang AI ket hop Rule Engine."""
     sit = req.situation.strip()
     if not sit:
         raise HTTPException(status_code=400, detail="Vui lòng cung cấp mô tả tình huống.")
@@ -547,26 +570,59 @@ def analyze_case(req: CaseAnalysisRequest):
     sources = retrieve_chunks(query, top_k=6)
     client, config = get_openai_client(req.api_key, req.base_url, req.model)
     
+    # Chay Rule Engine xac minh nghiep vu chuan 100% neu co thong so
+    rule_eval = None
+    if req.gpa is not None:
+        sem_idx = req.semester_index if req.semester_index is not None else 2
+        yr_lvl = req.year_level if req.year_level is not None else max(1, (sem_idx + 1) // 2)
+        consec = bool(req.consecutive_warning or (req.warning_count is not None and req.warning_count >= 1))
+        rule_eval = check_academic_status_rules(StatusCheckInput(
+            semester_index=sem_idx,
+            year_level=yr_lvl,
+            gpa_semester=req.gpa,
+            cpa_cumulative=req.gpa,
+            previous_warnings=req.warning_count or 0,
+            consecutive_warning=consec
+        ))
+        
     details_meta = []
     if req.gpa is not None:
         details_meta.append(f"Điểm GPA: {req.gpa}")
     if req.credits is not None:
-        details_meta.append(f"Số tín chỉ dự kiến: {req.credits}")
+        details_meta.append(f"Số tín chỉ: {req.credits}")
     if req.warning_count is not None:
         details_meta.append(f"Số lần đã bị cảnh báo học vụ: {req.warning_count}")
+    if req.semester_index is not None:
+        details_meta.append(f"Học kỳ thứ: {req.semester_index}")
+    if req.year_level is not None:
+        details_meta.append(f"Sinh viên năm thứ: {req.year_level}")
     meta_str = " | ".join(details_meta) if details_meta else "Chưa cung cấp chỉ số cụ thể"
     
+    rule_summary_str = ""
+    if rule_eval:
+        rule_summary_str = (
+            f"\n\nKẾT QUẢ XÁC MINH BỘ QUY CHẾ ĐÀO TẠO (RULE ENGINE):\n"
+            f"- Đánh giá mức độ: {rule_eval['risk_label']}\n"
+            f"- Xếp loại học lực: {rule_eval['academic_standing']}\n"
+            f"- Hạn mức tín chỉ đăng ký kỳ tới: {rule_eval['allowed_credits_next_semester']['min']} - {rule_eval['allowed_credits_next_semester']['max']} tín chỉ ({rule_eval['allowed_credits_next_semester']['note']})\n"
+            f"- Các căn cứ điều khoản: {', '.join(rule_eval['regulations_cited'])}\n"
+        )
+        if rule_eval['is_expelled']:
+            rule_summary_str += f"- LƯU Ý SỐNG CÒN: {rule_eval['expel_reason']}\n"
+            
     if not client:
         return {
             "analysis": (
-                "### 🚦 Phân tích tình huống học vụ (Chế độ trích xuất)\n\n"
+                "### 🚦 Phân tích tình huống học vụ (Chế độ trích xuất & Rule Engine)\n\n"
                 f"**Thông tin bạn cung cấp:** {sit}\n"
-                f"**Chỉ số:** {meta_str}\n\n"
+                f"**Chỉ số:** {meta_str}\n"
+                f"{rule_summary_str}\n"
                 "**Các điều khoản quy chế cần đặc biệt lưu ý:**\n"
                 + "\n".join(f"- **Điều {s['dieu']}**: {s['text'].splitlines()[0]}" for s in sources[:4])
-                + "\n\n> 💡 *Vui lòng cấu hình API Key (Google Gemini miễn phí) tại mục Cài đặt AI để nhận phân tích chi tiết tự động từ AI!*"
+                + "\n\n> 💡 *Vui lòng cấu hình API Key (Google Gemini miễn phí) tại mục Cài đặt AI để nhận phân tích chuyên sâu tự động từ AI!*"
             ),
             "sources": sources,
+            "rule_engine": rule_eval,
             "mode": "fallback"
         }
         
@@ -574,9 +630,11 @@ def analyze_case(req: CaseAnalysisRequest):
     user_prompt = (
         f"THÔNG TIN TÌNH HUỐNG SINH VIÊN:\n"
         f"- Mô tả: {sit}\n"
-        f"- Chỉ số học tập: {meta_str}\n\n"
+        f"- Chỉ số học tập: {meta_str}\n"
+        f"{rule_summary_str}\n"
         f"NGỮ CẢNH CÁC ĐIỀU KHOẢN QUY CHẾ:\n{context}\n\n"
-        f"Hãy tiến hành phân tích học vụ theo đúng 3 phần đã quy định trong hệ thống."
+        f"Hãy tiến hành phân tích học vụ theo đúng 3 phần đã quy định trong hệ thống. "
+        f"ĐẶC BIỆT: Bắt buộc tôn trọng và trích dẫn các kết quả xác minh từ Bộ Quy chế (Rule Engine) ở trên."
     )
     
     try:
@@ -594,6 +652,7 @@ def analyze_case(req: CaseAnalysisRequest):
         return {
             "analysis": resp.choices[0].message.content,
             "sources": sources,
+            "rule_engine": rule_eval,
             "mode": "rag",
             "model": used_model
         }
@@ -601,6 +660,7 @@ def analyze_case(req: CaseAnalysisRequest):
         return {
             "analysis": f"⚠️ Lỗi khi phân tích bằng AI: {str(e)}",
             "sources": sources,
+            "rule_engine": rule_eval,
             "mode": "error"
         }
 
@@ -664,3 +724,44 @@ def explain_dieu(req: ExplainClauseRequest):
             "dieu": dieu_target,
             "mode": "error"
         }
+
+
+# =====================================================================
+# CAC ENDPOINTS MO PHONG & CONG CU TINH TOAN HOC VU (RULE ENGINE APIS)
+# =====================================================================
+
+@app.post("/api/simulator/status-check")
+def api_status_check(req: StatusCheckInput):
+    """
+    Kiem tra tinh trang hoc vu, canh bao hoc vu va nguy co buoc thoi hoc
+    tuan thu 100% Dieu 11 va Dieu 4 Quy che dao tao.
+    """
+    return check_academic_status_rules(req)
+
+
+@app.post("/api/simulator/gpa-retake")
+def api_gpa_retake(req: GPASimulatorInput):
+    """
+    Mo phong ket qua nang diem CPA khi hoc lai mon F hoac hoc cai thien mon D, D+
+    theo cong thuc thay the diem cao nhat (Dieu 6 Khoan 2).
+    """
+    return simulate_gpa_improvement(req)
+
+
+@app.post("/api/simulator/grade-calc")
+def api_grade_calc(req: CourseGradeInput):
+    """
+    Tinh diem tong ket hoc phan (10% CC + 30% GK + 60% CK),
+    quy doi sang thang chu va thang 4 (Dieu 7 & 8).
+    """
+    return calculate_course_grade(req)
+
+
+@app.post("/api/simulator/graduation-check")
+def api_graduation_check(req: GraduationCheckInput):
+    """
+    Kiem tra 4 dieu kien tot nghiep, xep hang tot nghiep va kiem tra
+    quy dinh giam mot hang tot nghiep do hoc lai > 5% hoac bi ky luat (Dieu 12 & 13).
+    """
+    return check_graduation_eligibility(req)
+

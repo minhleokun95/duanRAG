@@ -1,0 +1,825 @@
+{
+  "metadata": {
+    "evaluation_time": "2026-10-27 13:31:47",
+    "model_name": "intfloat/multilingual-e5-small",
+    "vector_dimensions": 384,
+    "database": "ChromaDB (Persistent)",
+    "collection_chunks_count": 16,
+    "total_benchmark_questions": 25
+  },
+  "overall_metrics": {
+    "hit_1_count": 24,
+    "hit_1_rate_pct": 96.0,
+    "hit_3_count": 25,
+    "hit_3_rate_pct": 100.0,
+    "hit_5_count": 25,
+    "hit_5_rate_pct": 100.0,
+    "mrr": 0.98,
+    "avg_embedding_latency_ms": 81.51,
+    "avg_chroma_latency_ms": 4.29,
+    "avg_total_retrieval_latency_ms": 85.8
+  },
+  "category_breakdown": {
+    "Quy dinh chung & Tin chi": {
+      "total": 3,
+      "hit_1": 3,
+      "hit_3": 3,
+      "hit_5": 3,
+      "rr_sum": 3.0
+    },
+    "Dang ky & Rut hoc phan": {
+      "total": 5,
+      "hit_1": 5,
+      "hit_3": 5,
+      "hit_5": 5,
+      "rr_sum": 5.0
+    },
+    "Hoc lai & Cai thien": {
+      "total": 3,
+      "hit_1": 3,
+      "hit_3": 3,
+      "hit_5": 3,
+      "rr_sum": 3.0
+    },
+    "Danh gia & Thang diem": {
+      "total": 4,
+      "hit_1": 4,
+      "hit_3": 4,
+      "hit_5": 4,
+      "rr_sum": 4.0
+    },
+    "Canh bao & Xu ly hoc vu": {
+      "total": 4,
+      "hit_1": 3,
+      "hit_3": 4,
+      "hit_5": 4,
+      "rr_sum": 3.5
+    },
+    "Xet & Hang tot nghiep": {
+      "total": 3,
+      "hit_1": 3,
+      "hit_3": 3,
+      "hit_5": 3,
+      "rr_sum": 3.0
+    },
+    "Bao luu & Ky luat": {
+      "total": 3,
+      "hit_1": 3,
+      "hit_3": 3,
+      "hit_5": 3,
+      "rr_sum": 3.0
+    }
+  },
+  "test_cases": [
+    {
+      "id": "TC01",
+      "category": "Quy dinh chung & Tin chi",
+      "question": "Một tín chỉ học tập được quy định bằng bao nhiêu tiết lý thuyết hoặc thực hành?",
+      "expected_dieu": [
+        "2"
+      ],
+      "retrieved_dieus": [
+        "2",
+        "4",
+        "16",
+        "15",
+        "11"
+      ],
+      "scores": [
+        0.901,
+        0.859,
+        0.843,
+        0.842,
+        0.839
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 316.44,
+      "chroma_ms": 13.4,
+      "total_ms": 329.84
+    },
+    {
+      "id": "TC02",
+      "category": "Quy dinh chung & Tin chi",
+      "question": "Mỗi học phần trong chương trình có khối lượng bao nhiêu tín chỉ?",
+      "expected_dieu": [
+        "2"
+      ],
+      "retrieved_dieus": [
+        "2",
+        "4",
+        "8",
+        "9",
+        "10"
+      ],
+      "scores": [
+        0.908,
+        0.871,
+        0.84,
+        0.834,
+        0.833
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 59.24,
+      "chroma_ms": 4.08,
+      "total_ms": 63.32
+    },
+    {
+      "id": "TC03",
+      "category": "Quy dinh chung & Tin chi",
+      "question": "Thời gian tối đa để sinh viên hoàn thành khóa học là bao nhiêu năm?",
+      "expected_dieu": [
+        "3"
+      ],
+      "retrieved_dieus": [
+        "3",
+        "14",
+        "4",
+        "12",
+        "11"
+      ],
+      "scores": [
+        0.918,
+        0.874,
+        0.871,
+        0.858,
+        0.855
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 79.93,
+      "chroma_ms": 4.84,
+      "total_ms": 84.77
+    },
+    {
+      "id": "TC04",
+      "category": "Dang ky & Rut hoc phan",
+      "question": "Một học kỳ chính sinh viên được đăng ký tối thiểu và tối đa bao nhiêu tín chỉ?",
+      "expected_dieu": [
+        "4"
+      ],
+      "retrieved_dieus": [
+        "4",
+        "2",
+        "6",
+        "9",
+        "5"
+      ],
+      "scores": [
+        0.918,
+        0.862,
+        0.855,
+        0.853,
+        0.848
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 81.78,
+      "chroma_ms": 3.96,
+      "total_ms": 85.73
+    },
+    {
+      "id": "TC05",
+      "category": "Dang ky & Rut hoc phan",
+      "question": "Sinh viên đang bị cảnh báo học vụ thì được đăng ký tối đa bao nhiêu tín chỉ kỳ tới?",
+      "expected_dieu": [
+        "4"
+      ],
+      "retrieved_dieus": [
+        "4",
+        "11",
+        "15",
+        "14",
+        "2"
+      ],
+      "scores": [
+        0.923,
+        0.896,
+        0.872,
+        0.855,
+        0.853
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 69.92,
+      "chroma_ms": 5.58,
+      "total_ms": 75.5
+    },
+    {
+      "id": "TC06",
+      "category": "Dang ky & Rut hoc phan",
+      "question": "Trong học kỳ hè sinh viên được phép đăng ký tối đa bao nhiêu tín chỉ?",
+      "expected_dieu": [
+        "4"
+      ],
+      "retrieved_dieus": [
+        "4",
+        "2",
+        "5",
+        "6",
+        "15"
+      ],
+      "scores": [
+        0.92,
+        0.858,
+        0.856,
+        0.852,
+        0.849
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 72.15,
+      "chroma_ms": 4.31,
+      "total_ms": 76.46
+    },
+    {
+      "id": "TC07",
+      "category": "Dang ky & Rut hoc phan",
+      "question": "Sinh viên được rút bớt học phần trong thời gian bao lâu kể từ đầu học kỳ?",
+      "expected_dieu": [
+        "5"
+      ],
+      "retrieved_dieus": [
+        "5",
+        "14",
+        "3",
+        "4",
+        "11"
+      ],
+      "scores": [
+        0.92,
+        0.867,
+        0.866,
+        0.866,
+        0.866
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 64.52,
+      "chroma_ms": 2.73,
+      "total_ms": 67.25
+    },
+    {
+      "id": "TC08",
+      "category": "Dang ky & Rut hoc phan",
+      "question": "Rút học phần trong thời hạn quy định có bị tính điểm và mất học phí không?",
+      "expected_dieu": [
+        "5"
+      ],
+      "retrieved_dieus": [
+        "5",
+        "6",
+        "8",
+        "4",
+        "11"
+      ],
+      "scores": [
+        0.9,
+        0.876,
+        0.869,
+        0.857,
+        0.855
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 57.69,
+      "chroma_ms": 3.11,
+      "total_ms": 60.8
+    },
+    {
+      "id": "TC09",
+      "category": "Hoc lai & Cai thien",
+      "question": "Môn học bắt buộc bị điểm F thì sinh viên phải làm gì?",
+      "expected_dieu": [
+        "6"
+      ],
+      "retrieved_dieus": [
+        "6",
+        "12",
+        "8",
+        "11",
+        "15"
+      ],
+      "scores": [
+        0.892,
+        0.862,
+        0.856,
+        0.855,
+        0.854
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 56.98,
+      "chroma_ms": 4.19,
+      "total_ms": 61.17
+    },
+    {
+      "id": "TC10",
+      "category": "Hoc lai & Cai thien",
+      "question": "Điểm nào thì sinh viên được quyền đăng ký học cải thiện điểm?",
+      "expected_dieu": [
+        "6"
+      ],
+      "retrieved_dieus": [
+        "6",
+        "5",
+        "12",
+        "8",
+        "11"
+      ],
+      "scores": [
+        0.914,
+        0.865,
+        0.863,
+        0.861,
+        0.861
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 64.84,
+      "chroma_ms": 4.99,
+      "total_ms": 69.83
+    },
+    {
+      "id": "TC11",
+      "category": "Hoc lai & Cai thien",
+      "question": "Khi học lại cải thiện điểm thì điểm mới hay điểm cũ được dùng để tính CPA tích lũy?",
+      "expected_dieu": [
+        "6"
+      ],
+      "retrieved_dieus": [
+        "6",
+        "8",
+        "9",
+        "5",
+        "7"
+      ],
+      "scores": [
+        0.894,
+        0.871,
+        0.862,
+        0.854,
+        0.85
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 65.81,
+      "chroma_ms": 3.54,
+      "total_ms": 69.35
+    },
+    {
+      "id": "TC12",
+      "category": "Danh gia & Thang diem",
+      "question": "Điểm học phần được tính theo tỷ lệ các điểm thành phần như thế nào?",
+      "expected_dieu": [
+        "8"
+      ],
+      "retrieved_dieus": [
+        "8",
+        "7",
+        "6",
+        "9",
+        "2"
+      ],
+      "scores": [
+        0.904,
+        0.876,
+        0.874,
+        0.869,
+        0.862
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 48.03,
+      "chroma_ms": 3.12,
+      "total_ms": 51.15
+    },
+    {
+      "id": "TC13",
+      "category": "Danh gia & Thang diem",
+      "question": "Vắng mặt bao nhiêu phần trăm số tiết thì sinh viên bị cấm thi?",
+      "expected_dieu": [
+        "8"
+      ],
+      "retrieved_dieus": [
+        "8",
+        "15",
+        "2",
+        "11",
+        "5"
+      ],
+      "scores": [
+        0.867,
+        0.861,
+        0.845,
+        0.843,
+        0.843
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 61.01,
+      "chroma_ms": 3.39,
+      "total_ms": 64.39
+    },
+    {
+      "id": "TC14",
+      "category": "Danh gia & Thang diem",
+      "question": "Mức điểm thang 10 từ bao nhiêu trở lên thì được quy đổi thành điểm A thang 4?",
+      "expected_dieu": [
+        "7"
+      ],
+      "retrieved_dieus": [
+        "7",
+        "10",
+        "9",
+        "8",
+        "6"
+      ],
+      "scores": [
+        0.892,
+        0.856,
+        0.842,
+        0.84,
+        0.834
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 106.2,
+      "chroma_ms": 4.67,
+      "total_ms": 110.87
+    },
+    {
+      "id": "TC15",
+      "category": "Danh gia & Thang diem",
+      "question": "Thang điểm 4 quy định xếp loại học lực Xuất sắc và Giỏi từ bao nhiêu điểm?",
+      "expected_dieu": [
+        "10"
+      ],
+      "retrieved_dieus": [
+        "10",
+        "13",
+        "7",
+        "8",
+        "9"
+      ],
+      "scores": [
+        0.919,
+        0.874,
+        0.853,
+        0.841,
+        0.841
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 60.64,
+      "chroma_ms": 3.13,
+      "total_ms": 63.77
+    },
+    {
+      "id": "TC16",
+      "category": "Canh bao & Xu ly hoc vu",
+      "question": "Sinh viên năm nhất bị cảnh báo học vụ khi điểm trung bình tích lũy CPA dưới bao nhiêu?",
+      "expected_dieu": [
+        "11"
+      ],
+      "retrieved_dieus": [
+        "11",
+        "9",
+        "6",
+        "13",
+        "4"
+      ],
+      "scores": [
+        0.91,
+        0.869,
+        0.867,
+        0.86,
+        0.86
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 121.22,
+      "chroma_ms": 3.17,
+      "total_ms": 124.38
+    },
+    {
+      "id": "TC17",
+      "category": "Canh bao & Xu ly hoc vu",
+      "question": "Bị cảnh báo học vụ mấy lần liên tiếp thì sinh viên bị buộc thôi học?",
+      "expected_dieu": [
+        "11"
+      ],
+      "retrieved_dieus": [
+        "11",
+        "14",
+        "15",
+        "4",
+        "5"
+      ],
+      "scores": [
+        0.926,
+        0.869,
+        0.865,
+        0.862,
+        0.847
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 97.42,
+      "chroma_ms": 4.21,
+      "total_ms": 101.63
+    },
+    {
+      "id": "TC18",
+      "category": "Canh bao & Xu ly hoc vu",
+      "question": "Điểm trung bình học kỳ ở kỳ đầu tiên dưới bao nhiêu thì bị cảnh báo?",
+      "expected_dieu": [
+        "11"
+      ],
+      "retrieved_dieus": [
+        "11",
+        "9",
+        "10",
+        "6",
+        "13"
+      ],
+      "scores": [
+        0.898,
+        0.875,
+        0.865,
+        0.86,
+        0.86
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 73.89,
+      "chroma_ms": 3.83,
+      "total_ms": 77.72
+    },
+    {
+      "id": "TC19",
+      "category": "Canh bao & Xu ly hoc vu",
+      "question": "Sinh viên bị buộc thôi học có được bảo lưu kết quả học tập đã hoàn thành không?",
+      "expected_dieu": [
+        "11"
+      ],
+      "retrieved_dieus": [
+        "14",
+        "11",
+        "15",
+        "5",
+        "3"
+      ],
+      "scores": [
+        0.892,
+        0.89,
+        0.861,
+        0.852,
+        0.848
+      ],
+      "first_correct_rank": 2,
+      "reciprocal_rank": 0.5,
+      "hit_1": false,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 57.37,
+      "chroma_ms": 3.21,
+      "total_ms": 60.58
+    },
+    {
+      "id": "TC20",
+      "category": "Xet & Hang tot nghiep",
+      "question": "Sinh viên cần đáp ứng những điều kiện nào để được xét công nhận tốt nghiệp?",
+      "expected_dieu": [
+        "12"
+      ],
+      "retrieved_dieus": [
+        "12",
+        "13",
+        "1",
+        "6",
+        "15"
+      ],
+      "scores": [
+        0.927,
+        0.85,
+        0.847,
+        0.847,
+        0.845
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 61.97,
+      "chroma_ms": 3.56,
+      "total_ms": 65.53
+    },
+    {
+      "id": "TC21",
+      "category": "Xet & Hang tot nghiep",
+      "question": "Điểm CPA toàn khóa tối thiểu là bao nhiêu để được xét tốt nghiệp đại học?",
+      "expected_dieu": [
+        "12"
+      ],
+      "retrieved_dieus": [
+        "12",
+        "13",
+        "8",
+        "6",
+        "11"
+      ],
+      "scores": [
+        0.876,
+        0.873,
+        0.851,
+        0.85,
+        0.85
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 69.12,
+      "chroma_ms": 3.4,
+      "total_ms": 72.53
+    },
+    {
+      "id": "TC22",
+      "category": "Xet & Hang tot nghiep",
+      "question": "Trường hợp nào sinh viên tốt nghiệp loại Giỏi hoặc Xuất sắc bị giảm một hạng tốt nghiệp?",
+      "expected_dieu": [
+        "13"
+      ],
+      "retrieved_dieus": [
+        "13",
+        "15",
+        "10",
+        "11",
+        "12"
+      ],
+      "scores": [
+        0.895,
+        0.842,
+        0.841,
+        0.838,
+        0.83
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 65.49,
+      "chroma_ms": 3.6,
+      "total_ms": 69.08
+    },
+    {
+      "id": "TC23",
+      "category": "Bao luu & Ky luat",
+      "question": "Thời gian nghỉ học tạm thời và bảo lưu kết quả tối đa là bao nhiêu học kỳ?",
+      "expected_dieu": [
+        "14"
+      ],
+      "retrieved_dieus": [
+        "14",
+        "3",
+        "11",
+        "4",
+        "6"
+      ],
+      "scores": [
+        0.918,
+        0.874,
+        0.852,
+        0.844,
+        0.836
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 51.79,
+      "chroma_ms": 3.83,
+      "total_ms": 55.62
+    },
+    {
+      "id": "TC24",
+      "category": "Bao luu & Ky luat",
+      "question": "Sinh viên nhìn bài hoặc trao đổi bài trong phòng thi bị xử lý thế nào?",
+      "expected_dieu": [
+        "15"
+      ],
+      "retrieved_dieus": [
+        "15",
+        "5",
+        "6",
+        "12",
+        "11"
+      ],
+      "scores": [
+        0.897,
+        0.838,
+        0.836,
+        0.833,
+        0.832
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 91.1,
+      "chroma_ms": 3.46,
+      "total_ms": 94.55
+    },
+    {
+      "id": "TC25",
+      "category": "Bao luu & Ky luat",
+      "question": "Hành vi nhờ người khác thi hộ hoặc thi hộ người khác bị kỷ luật ở mức nào?",
+      "expected_dieu": [
+        "15"
+      ],
+      "retrieved_dieus": [
+        "15",
+        "11",
+        "16",
+        "13",
+        "6"
+      ],
+      "scores": [
+        0.86,
+        0.814,
+        0.813,
+        0.812,
+        0.801
+      ],
+      "first_correct_rank": 1,
+      "reciprocal_rank": 1.0,
+      "hit_1": true,
+      "hit_3": true,
+      "hit_5": true,
+      "embedding_ms": 83.17,
+      "chroma_ms": 6.0,
+      "total_ms": 89.18
+    }
+  ]
+}

@@ -31,7 +31,10 @@ def read_pdf(path):
         return "\n".join(page.extract_text() or "" for page in pdf.pages)
 
 
+import unicodedata
+
 def clean(text):
+    text = unicodedata.normalize("NFC", text)
     text = text.replace("\u00a0", " ")
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)

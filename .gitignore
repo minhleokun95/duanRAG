@@ -48,6 +48,7 @@ data/chroma/
 # OS generated files
 Thumbs.db
 ehthumbs.db
-Desktop.ini
+# Temporary backup files
+*.bak
 $RECYCLE.BIN/
 .DS_Store

@@ -354,14 +354,16 @@
     }
     .btn-block:hover { filter: brightness(1.05); }
 
-    /* Result formatting */
+    /* Result formatting - 4 Cap do rui ro hoc vu */
     .risk-banner {
       padding: 12px 16px; border-radius: 10px; margin-bottom: 20px;
       display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px;
     }
-    .risk-banner.high { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.25); }
-    .risk-banner.warn { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.25); }
-    .risk-banner.safe { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .risk-banner.critical { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .risk-banner.warn { background: rgba(249, 115, 22, 0.15); color: #ea580c; border: 1px solid rgba(249, 115, 22, 0.35); }
+    .risk-banner.attention { background: rgba(234, 179, 8, 0.15); color: #ca8a04; border: 1px solid rgba(234, 179, 8, 0.35); }
+    .risk-banner.safe { background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.35); }
+
 
     .analysis-content { font-size: 14.5px; line-height: 1.7; }
     .analysis-content h3 { font-size: 15px; margin: 18px 0 8px; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 4px; }
@@ -1649,7 +1651,7 @@
         item.innerHTML = `
           <div class="source-head">
             <span class="source-dieu">Điều ${s.dieu}: ${cleanTitle}</span>
-            <span class="source-score ${scoreClass}">${scorePct}% tương đồng</span>
+            <span class="source-score ${scoreClass}">Cosine: ${s.score}</span>
           </div>
           <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">${s.chuong || 'Quy chế đào tạo'}</div>
           <div class="source-snippet">${s.text}</div>
@@ -1859,42 +1861,39 @@
         const data = await res.json();
         const analysis = data.analysis;
 
-        // Determine Risk Banner
-        let riskClass = 'safe';
-        let riskText = '🟢 Tình trạng An toàn: Tiếp tục duy trì kế hoạch học tập';
-        if (analysis.includes('🔴') || analysis.toLowerCase().includes('buộc thôi học') || analysis.toLowerCase().includes('nguy cơ cao')) {
-          riskClass = 'high';
-          riskText = '⚠️ NGUY CƠ BUỘC THÔI HỌC / CẢNH BÁO CẤP 3';
-        } else if (analysis.includes('🟡') || analysis.includes('🟠') || analysis.toLowerCase().includes('cảnh báo')) {
-          riskClass = 'warn';
-          riskText = '🟠 MỨC ĐỘ CẢNH BÁO: Cần điều chỉnh kế hoạch học tập khẩn cấp';
-        }
-
         const gpaVal = el('case-gpa').value;
         const creditsVal = el('case-credits').value;
         const warningVal = el('case-warning').value;
 
-        // Determine Risk Banner via Rule Engine or Text
+        // Xac dinh 4 cap do rui ro chuan: safe (xanh), attention (vang), warn (cam), critical (do)
         let riskClass = 'safe';
-        let riskText = '🟢 Tình trạng An toàn: Tiếp tục duy trì kế hoạch học tập';
+        let riskText = '🟢 BÌNH THƯỜNG / AN TOÀN: Tiếp tục duy trì kế hoạch học tập';
 
         if (data.rule_engine) {
           const re = data.rule_engine;
           riskText = re.risk_label;
           if (re.status === 'CRITICAL') {
-            riskClass = 'high';
-          } else if (re.status === 'HIGH_WARNING' || re.status === 'WARNING') {
-            riskClass = 'warn';
+            riskClass = 'critical'; // Do
+          } else if (re.status === 'HIGH_WARNING') {
+            riskClass = 'warn';     // Cam
+          } else if (re.status === 'WARNING' || re.status === 'ATTENTION') {
+            riskClass = 'attention'; // Vang
           } else {
-            riskClass = 'safe';
+            riskClass = 'safe';     // Xanh
           }
         } else {
-          if (analysis.includes('🔴') || analysis.toLowerCase().includes('buộc thôi học') || analysis.toLowerCase().includes('nguy cơ cao')) {
-            riskClass = 'high';
-            riskText = '⚠️ NGUY CƠ BUỘC THÔI HỌC / CẢNH BÁO CẤP 3';
-          } else if (analysis.includes('🟡') || analysis.includes('🟠') || analysis.toLowerCase().includes('cảnh báo')) {
+          if (analysis.includes('🔴') || analysis.toLowerCase().includes('buộc thôi học')) {
+            riskClass = 'critical';
+            riskText = '🔴 NGUY CƠ CAO NHẤT: BUỘC THÔI HỌC';
+          } else if (analysis.includes('🟠') || analysis.toLowerCase().includes('cảnh báo cao')) {
             riskClass = 'warn';
-            riskText = '🟠 MỨC ĐỘ CẢNH BÁO: Cần điều chỉnh kế hoạch học tập khẩn cấp';
+            riskText = '🟠 CẢNH BÁO CAO: Cần điều chỉnh kế hoạch học tập khẩn cấp';
+          } else if (analysis.includes('🟡') || analysis.toLowerCase().includes('cần lưu ý') || analysis.toLowerCase().includes('cảnh báo')) {
+            riskClass = 'attention';
+            riskText = '🟡 CẦN LƯU Ý: Có dấu hiệu cảnh báo học vụ';
+          } else {
+            riskClass = 'safe';
+            riskText = '🟢 BÌNH THƯỜNG / AN TOÀN: Tiếp tục duy trì kế hoạch học tập';
           }
         }
 

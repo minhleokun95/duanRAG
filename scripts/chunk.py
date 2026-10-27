@@ -25,7 +25,11 @@ def split_long(header, lines):
     return [f"{header}\n{p}" for p in parts] or [header]
 
 
+import unicodedata
+
+
 def process(doc, text):
+    text = unicodedata.normalize("NFC", text)
     sections, chuong, cur = [], "", None
     for line in text.split("\n"):
         line = line.strip()

@@ -50,17 +50,41 @@ COLLECTION_NAME = "quy_dinh_hoc_vu"
 
 DEFAULT_GEMINI_MODEL = "gemini-flash-lite-latest"
 
-if not DB_DIR.exists():
-    sys.exit("Chua co vector DB. Hay chay: python scripts\\embed_index.py")
+import unicodedata
 
-print("Dang khoi dong he thong RAG & nap model embedding...")
-try:
-    embedder = SentenceTransformer(MODEL_NAME, local_files_only=True)
-except Exception:
-    embedder = SentenceTransformer(MODEL_NAME)
-chroma_client = chromadb.PersistentClient(path=str(DB_DIR))
-collection = chroma_client.get_collection(COLLECTION_NAME)
-print(f"He thong san sang voi {collection.count()} chunk quy che hoc vu.")
+def init_knowledge_base():
+    """Khoi dong embedding model va ChromaDB, tu dong lap chi muc neu chua co."""
+    global embedder, chroma_client
+    print("Dang khoi dong he thong RAG & nap model embedding...")
+    try:
+        embedder = SentenceTransformer(MODEL_NAME, local_files_only=True)
+    except Exception:
+        embedder = SentenceTransformer(MODEL_NAME)
+        
+    DB_DIR.mkdir(parents=True, exist_ok=True)
+    chroma_client = chromadb.PersistentClient(path=str(DB_DIR))
+    try:
+        col = chroma_client.get_collection(COLLECTION_NAME)
+        if col.count() > 0:
+            print(f"He thong san sang voi {col.count()} chunk quy che hoc vu.")
+            return col
+    except Exception:
+        pass
+        
+    print("[Tu dong lap chi muc] Dang khoi tao vector DB tu data/chunks.json...")
+    col = chroma_client.get_or_create_collection(COLLECTION_NAME)
+    if CHUNKS_FILE.exists():
+        chunks = json.loads(CHUNKS_FILE.read_text(encoding="utf-8"))
+        ids = [str(c["id"]) for c in chunks]
+        texts = [c["text"] for c in chunks]
+        passages = ["passage: " + unicodedata.normalize("NFC", t) for t in texts]
+        vecs = embedder.encode(passages, normalize_embeddings=True).tolist()
+        metas = [{"dieu": str(c.get("dieu", "")), "doc": c.get("doc", ""), "chuong": c.get("chuong", "")} for c in chunks]
+        col.add(ids=ids, embeddings=vecs, documents=texts, metadatas=metas)
+        print(f"[Tu dong lap chi muc] Da nap thanh cong {len(chunks)} chunks quy che vao ChromaDB.")
+    return col
+
+collection = init_knowledge_base()
 
 # Khởi tạo ứng dụng FastAPI
 app = FastAPI(
@@ -197,9 +221,10 @@ def create_chat_completion_resilient(client, primary_model: str, messages: list,
 
 
 def retrieve_chunks(question: str, top_k: int = 4) -> List[Dict[str, Any]]:
-    """Truy xuat cac chunk tu Chroma vector DB."""
+    """Truy xuat cac chunk tu Chroma vector DB voi chuan hoa ky tu tieng Viet NFC."""
     top_k = max(1, min(top_k, 10))
-    vec = embedder.encode(["query: " + question], normalize_embeddings=True)[0].tolist()
+    norm_question = unicodedata.normalize("NFC", question.strip())
+    vec = embedder.encode(["query: " + norm_question], normalize_embeddings=True)[0].tolist()
     res = collection.query(query_embeddings=[vec], n_results=top_k)
     sources = []
     if res and res.get("documents") and len(res["documents"]) > 0:

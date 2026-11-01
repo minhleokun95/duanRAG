@@ -26,7 +26,9 @@ def main():
         q = input("Cau hoi> ").strip()
         if not q:
             break
-        vec = model.encode(["query: " + q], normalize_embeddings=True)[0].tolist()
+        import unicodedata
+        q_norm = unicodedata.normalize("NFC", q)
+        vec = model.encode(["query: " + q_norm], normalize_embeddings=True)[0].tolist()
         res = col.query(query_embeddings=[vec], n_results=TOP_K)
         for doc, meta, dist in zip(res["documents"][0], res["metadatas"][0], res["distances"][0]):
             print(f"\n--- Dieu {meta['dieu']} | do gan: {1 - dist:.3f}")

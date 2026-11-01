@@ -23,8 +23,9 @@ def main():
     print(f"Doc {len(chunks)} chunk. Dang tai/ nap model {MODEL_NAME} (lan dau se mat vai phut)...")
 
     model = SentenceTransformer(MODEL_NAME)
-    # E5 yeu cau tien to "passage: " cho van ban tai lieu
-    texts = ["passage: " + c["text"] for c in chunks]
+    import unicodedata
+    # E5 yeu cau tien to "passage: " cho van ban tai lieu va chuan hoa Unicode NFC
+    texts = ["passage: " + unicodedata.normalize("NFC", c["text"]) for c in chunks]
     vectors = model.encode(texts, normalize_embeddings=True,
                            batch_size=16, show_progress_bar=True)
     print("Kich thuoc vector:", vectors.shape)

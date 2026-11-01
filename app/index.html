@@ -798,13 +798,24 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="case-warning">Số lần đã bị cảnh báo học vụ:</label>
-              <select id="case-warning" class="form-select">
-                <option value="0">Chưa bị cảnh báo lần nào</option>
-                <option value="1">Đã bị cảnh báo 1 lần</option>
-                <option value="2">Đã bị cảnh báo 2 lần</option>
-              </select>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="case-year">Sinh viên năm thứ:</label>
+                <select id="case-year" class="form-select">
+                  <option value="1">Năm thứ nhất (Năm 1)</option>
+                  <option value="2" selected>Năm thứ hai (Năm 2)</option>
+                  <option value="3">Năm thứ ba (Năm 3)</option>
+                  <option value="4">Năm thứ tư trở đi (Năm 4+)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="case-warning">Số lần đã bị cảnh báo học vụ:</label>
+                <select id="case-warning" class="form-select">
+                  <option value="0">Chưa bị cảnh báo lần nào</option>
+                  <option value="1">Đã bị cảnh báo 1 lần</option>
+                  <option value="2">Đã bị cảnh báo 2 lần</option>
+                </select>
+              </div>
             </div>
 
             <button type="submit" id="btn-run-analyzer" class="btn-block">
@@ -1806,21 +1817,25 @@
           el('case-gpa').value = '1.15';
           el('case-credits').value = '14';
           el('case-warning').value = '2';
+          if (el('case-year')) el('case-year').value = '3';
         } else if (type === 'warning') {
           el('case-situation').value = 'Em là sinh viên năm 2, kỳ vừa rồi thi bị rớt 3 môn, điểm GPA học kỳ là 1.5, tổng tích lũy là 1.8. Em đã nhận 1 cảnh báo học vụ ở học kỳ trước. Em muốn hỏi: Kỳ tới em có bị buộc thôi học không? Em được đăng ký tối đa mấy tín chỉ và cần đạt điểm bao nhiêu để không bị xử lý học vụ tiếp?';
           el('case-gpa').value = '1.8';
           el('case-credits').value = '14';
           el('case-warning').value = '1';
+          if (el('case-year')) el('case-year').value = '2';
         } else if (type === 'improve') {
           el('case-situation').value = 'Em có 2 môn bị điểm D và 1 môn điểm D+. Em muốn hỏi quy định về việc học cải thiện điểm: Những điểm nào được phép học cải thiện, điểm mới sẽ thay thế hay tính song song, và có ảnh hưởng đến việc xét học bổng hay tốt nghiệp loại Giỏi không?';
           el('case-gpa').value = '2.7';
           el('case-credits').value = '18';
           el('case-warning').value = '0';
+          if (el('case-year')) el('case-year').value = '2';
         } else if (type === 'suspend') {
           el('case-situation').value = 'Em đang học năm thứ 3 và có việc gia đình đột xuất muốn làm đơn xin nghỉ học tạm thời (bảo lưu) 1 học kỳ. Xin hỏi điều kiện để được bảo lưu là gì, thời gian bảo lưu tối đa là bao lâu và có bị tính vào thời gian học tối đa của khóa học không?';
           el('case-gpa').value = '3.1';
           el('case-credits').value = '0';
           el('case-warning').value = '0';
+          if (el('case-year')) el('case-year').value = '3';
         }
       });
     });
@@ -1844,6 +1859,7 @@
       `;
 
       try {
+        const yearVal = el('case-year') ? parseInt(el('case-year').value) : 2;
         const res = await fetch('/api/analyze-case', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1852,6 +1868,8 @@
             gpa: parseFloat(el('case-gpa').value) || null,
             credits: parseInt(el('case-credits').value) || null,
             warning_count: parseInt(el('case-warning').value) || 0,
+            year_level: yearVal,
+            semester_index: yearVal * 2,
             api_key: state.userConfig.apiKey || null,
             base_url: state.userConfig.baseUrl || null,
             model: state.userConfig.model || null

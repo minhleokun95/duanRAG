@@ -198,7 +198,8 @@ def create_chat_completion_resilient(client, primary_model: str, messages: list,
     """Goi chat completion voi co che tu dong fallback neu model bi 404, 429 quota hoac timeout."""
     candidates = [primary_model]
     if "gemini" in primary_model.lower():
-        for fb in ["gemini-flash-lite-latest", "gemini-3-flash-preview", "gemini-3.8-flash"]:
+        # Danh sach model chinh thuc cua Google Gemini
+        for fb in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-flash-lite-latest"]:
             if fb not in candidates:
                 candidates.append(fb)
                 
@@ -428,8 +429,15 @@ def test_ai_connection(req: AITestRequest):
 
 
 @app.post("/api/config")
-def save_ai_config(req: ConfigSaveRequest):
-    """Luu cau hinh API Key vao file .env va ap dung ngay."""
+def save_ai_config(req: ConfigSaveRequest, request: Request):
+    """
+    Lưu cấu hình API Key vào file .env và áp dụng ngay trong phiên làm việc.
+    LƯU Ý BẢO MẬT & KIẾN TRÚC:
+    - Trong phạm vi đề tài đồ án tốt nghiệp, hệ thống được thiết kế theo mô hình Desktop/Local PoC
+      chạy trên máy trạm của sinh viên/nghiên cứu viên (127.0.0.1) phục vụ khảo sát và thực nghiệm.
+    - Trong kịch bản triển khai môi trường sản phẩm (Production đa người dùng), endpoint cấu hình này
+      cần được phân quyền Admin chặt chẽ qua JWT Authentication Middleware, đồng thời đóng CORS.
+    """
     api_key = req.api_key.strip()
     base_url = (req.base_url or "").strip()
     model = (req.model or DEFAULT_GEMINI_MODEL).strip()
@@ -521,7 +529,18 @@ def chat_stream(req: ChatStreamRequest):
     if not question:
         raise HTTPException(status_code=400, detail="Thiếu nội dung câu hỏi.")
         
-    sources = retrieve_chunks(question, req.top_k)
+    # Xử lý hội thoại đa lượt (Multi-turn Contextual Query Expansion / Rewriting)
+    # Nếu câu hỏi ngắn hoặc có tính chất nối tiếp đại từ, kết hợp ngữ cảnh câu hỏi trước đó để truy xuất chính xác
+    search_query = question
+    if req.messages and len(req.messages) > 1:
+        prev_user_queries = [m.content.strip() for m in req.messages[:-1] if m.role == "user" and m.content.strip()]
+        if prev_user_queries:
+            last_query = prev_user_queries[-1]
+            words = question.lower().split()
+            if len(words) < 8 or any(phrase in question.lower() for phrase in ["thế còn", "vậy còn", "kỳ hè", "học kỳ hè", "còn nếu", "thì sao", "như thế nào"]):
+                search_query = f"{last_query} {question}"
+        
+    sources = retrieve_chunks(search_query, req.top_k)
     client, config = get_openai_client(req.api_key, req.base_url, req.model)
     
     def event_stream():

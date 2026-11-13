@@ -17,7 +17,7 @@ import chromadb
 from dotenv import load_dotenv, set_key
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
 
@@ -52,17 +52,18 @@ DEFAULT_GEMINI_MODEL = "gemini-flash-lite-latest"
 
 import unicodedata
 
+print("Dang khoi dong he thong RAG & nap model embedding...")
+try:
+    embedder = SentenceTransformer(MODEL_NAME, local_files_only=True)
+except Exception:
+    embedder = SentenceTransformer(MODEL_NAME)
+
+DB_DIR.mkdir(parents=True, exist_ok=True)
+chroma_client = chromadb.PersistentClient(path=str(DB_DIR))
+
+
 def init_knowledge_base():
-    """Khoi dong embedding model va ChromaDB, tu dong lap chi muc neu chua co."""
-    global embedder, chroma_client
-    print("Dang khoi dong he thong RAG & nap model embedding...")
-    try:
-        embedder = SentenceTransformer(MODEL_NAME, local_files_only=True)
-    except Exception:
-        embedder = SentenceTransformer(MODEL_NAME)
-        
-    DB_DIR.mkdir(parents=True, exist_ok=True)
-    chroma_client = chromadb.PersistentClient(path=str(DB_DIR))
+    """Khoi dong ChromaDB va tu dong lap chi muc neu chua co."""
     try:
         col = chroma_client.get_collection(COLLECTION_NAME)
         if col.count() > 0:
@@ -203,7 +204,7 @@ def create_chat_completion_resilient(client, primary_model: str, messages: list,
             if fb not in candidates:
                 candidates.append(fb)
                 
-    last_err = None
+    last_err: Optional[Exception] = None
     for m in candidates:
         try:
             res = client.chat.completions.create(
@@ -218,7 +219,9 @@ def create_chat_completion_resilient(client, primary_model: str, messages: list,
             last_err = e
             print(f"[Model fallback] Model '{m}' loi: {e}. Dang thu model tiep theo...")
             continue
-    raise last_err
+    if last_err is not None:
+        raise last_err
+    raise RuntimeError("Không có model AI khả dụng để thực thi.")
 
 
 def retrieve_chunks(question: str, top_k: int = 4) -> List[Dict[str, Any]]:
@@ -329,6 +332,13 @@ class AITestRequest(BaseModel):
 @app.get("/")
 def home():
     return FileResponse(ROOT / "app" / "index.html")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """Tra ve favicon SVG bieu tuong hoc vu (mu cu nhan) de tranh loi 404."""
+    svg_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎓</text></svg>'
+    return Response(content=svg_icon, media_type="image/svg+xml")
 
 
 @app.get("/api/status")
